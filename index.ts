@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 import express from "express";
 import pg from "pg";
@@ -6,6 +5,10 @@ import pg from "pg";
 const { Pool } = pg;
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("Falta DATABASE_URL en las variables de entorno.");
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -23,7 +26,9 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/db-health", async (_req, res) => {
   try {
-    const result = await pool.query("SELECT NOW() AS server_time");
+    const result = await pool.query(
+      "SELECT NOW() AS server_time"
+    );
 
     res.json({
       status: "ok",
@@ -32,6 +37,7 @@ app.get("/api/db-health", async (_req, res) => {
     });
   } catch (error) {
     console.error("Error al conectar con PostgreSQL:", error);
+
     res.status(500).json({
       status: "error",
       database: "disconnected",
